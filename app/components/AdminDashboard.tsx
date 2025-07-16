@@ -29,13 +29,9 @@ interface AdminDashboardProps {
     email?: string;
     picture?: string;
   };
-  adminStatus: {
-    isAdmin: boolean;
-    adminSource?: string;
-  };
 }
 
-export default function AdminDashboard({ user, adminStatus }: AdminDashboardProps) {
+export default function AdminDashboard({ user }: AdminDashboardProps) {
   
   const { apiService, isLoading: apiLoading } = useApiService();
   const [activeTab, setActiveTab] = useState("lifehacks");
@@ -109,11 +105,6 @@ export default function AdminDashboard({ user, adminStatus }: AdminDashboardProp
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
                 <span className="font-medium">{user.name || user.email}</span>
-                {adminStatus.adminSource && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                    Admin ({adminStatus.adminSource})
-                  </span>
-                )}
               </div>
               <a
                 href="/auth/logout"
