@@ -1,6 +1,8 @@
 import { auth0 } from "@/lib/auth0";
 import { redirect } from "next/navigation";
 import AdminDashboard from "./components/AdminDashboard";
+import { apiService } from "@/lib/api-service";
+import { getAdminStatus } from "@/lib/auth-utils";
 import "./globals.css";
 
 export default async function Home() {
@@ -12,6 +14,21 @@ export default async function Home() {
     redirect("/auth/login");
   }
 
-  // If session exists, show admin dashboard
-  return <AdminDashboard user={session.user} />;
+  // Check if user is admin
+  const adminStatus = getAdminStatus(session.user);
+
+  if (!adminStatus.isAdmin) {
+    redirect("/unauthorized");
+  }
+
+  // Extract and set the access token for API calls
+  if (session.accessToken && typeof session.accessToken === 'string') {
+    console.log("Setting access token for API service");
+    apiService.setAccessToken(session.accessToken);
+  } else {
+    console.warn("No access token found in session");
+  }
+
+  // If session exists and user is admin, show admin dashboard
+  return <AdminDashboard user={session.user} adminStatus={adminStatus} />;
 }

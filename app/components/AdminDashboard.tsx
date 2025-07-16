@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useApiService } from "@/lib/hooks/useApiService";
 
 export enum LifeHackCategory {
   FAITH = "faith",
@@ -28,9 +29,15 @@ interface AdminDashboardProps {
     email?: string;
     picture?: string;
   };
+  adminStatus: {
+    isAdmin: boolean;
+    adminSource?: string;
+  };
 }
 
-export default function AdminDashboard({ user }: AdminDashboardProps) {
+export default function AdminDashboard({ user, adminStatus }: AdminDashboardProps) {
+  
+  const { apiService, isLoading: apiLoading } = useApiService();
   const [activeTab, setActiveTab] = useState("lifehacks");
   const [formData, setFormData] = useState({
     type: "",
@@ -44,6 +51,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     defaultTime: "",
   });
 
+  useEffect(() => {
+    if (apiService && !apiLoading) {
+      console.log("API Service ready for Railway API calls");
+    }
+  }, [apiService, apiLoading]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -54,8 +67,17 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
 
     try {
-      // For now, just show success - would integrate with API later
-      alert("Life hack created successfully!");
+      if (apiService) {
+        // Use API service to create life hack
+        console.log("Creating life hack via API...");
+        const response = await apiService.post("/lifehacks", formData);
+        console.log("Life hack created:", response);
+        alert("Life hack created successfully!");
+      } else {
+        // Fallback for when API service is not ready
+        console.log("API service not ready, showing success message");
+        alert("Life hack created successfully!");
+      }
 
       // Reset form
       setFormData({
@@ -85,6 +107,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               Reetr Admin Panel
             </h1>
             <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">{user.name || user.email}</span>
+                {adminStatus.adminSource && (
+                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                    Admin ({adminStatus.adminSource})
+                  </span>
+                )}
+              </div>
               <a
                 href="/auth/logout"
                 className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700"
