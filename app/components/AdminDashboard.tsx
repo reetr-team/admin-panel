@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useApiService } from "@/lib/hooks/useApiService";
+import { apiPost } from "@/lib/api-utils";
 
 export enum LifeHackCategory {
   FAITH = "faith",
@@ -28,10 +29,12 @@ interface AdminDashboardProps {
     name?: string;
     email?: string;
     picture?: string;
+    sub?: string;
   };
+  accessToken: string;
 }
 
-export default function AdminDashboard({ user }: AdminDashboardProps) {
+export default function AdminDashboard({ user, accessToken }: AdminDashboardProps) {
   
   const { apiService, isLoading: apiLoading } = useApiService();
   const [activeTab, setActiveTab] = useState("lifehacks");
@@ -51,7 +54,25 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     if (apiService && !apiLoading) {
       console.log("API Service ready for Railway API calls");
     }
-  }, [apiService, apiLoading]);
+
+    // Make API call on component mount
+    const makeApiCall = async () => {
+      try {
+        const body = {
+          auth0_user_id: user.sub,
+          email: user.email,
+          name: user.name,
+          picture: user.picture,
+        };
+        const data = await apiPost("/v1/auth/auth0/token", accessToken, body);
+        console.log("Backend API response:", data);
+      } catch (error) {
+        console.error("API call failed:", error);
+      }
+    };
+
+    makeApiCall();
+  }, [apiService, apiLoading, accessToken, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
