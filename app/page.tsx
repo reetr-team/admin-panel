@@ -1,33 +1,17 @@
 import { auth0 } from "@/lib/auth0";
+import { redirect } from "next/navigation";
+import AdminDashboard from "./components/AdminDashboard";
 import "./globals.css";
 
 export default async function Home() {
   // Fetch the user session
   const session = await auth0.getSession();
 
-  // If no session, show sign-up and login buttons
+  // If no session, always redirect to login
   if (!session) {
-    return (
-      <main>
-        <a href="/auth/login?screen_hint=signup">
-          <button>Sign up</button>
-        </a>
-        <a href="/auth/login">
-          <button>Log in</button>
-        </a>
-      </main>
-    );
+    redirect("/auth/login");
   }
 
-  // If session exists, show a welcome message and logout button
-  return (
-    <main>
-      <h1>Welcome, {session.user.name}!</h1>
-      <p>
-        <a href="/auth/logout">
-          <button>Log out</button>
-        </a>
-      </p>
-    </main>
-  );
+  // If session exists, show admin dashboard
+  return <AdminDashboard user={session.user} />;
 }
