@@ -18,13 +18,6 @@ export default async function Home() {
     redirect("/auth/logout");
   }
 
-  const body = {
-    auth0_user_id: session.user.sub,
-    email: session.user.email,
-    name: session.user.name,
-    picture: session.user.picture,
-  };
-
   // If session exists, show admin dashboard
   return <AdminDashboard user={session.user} accessToken={accessToken} />;
 }

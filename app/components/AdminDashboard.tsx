@@ -34,8 +34,10 @@ interface AdminDashboardProps {
   accessToken: string;
 }
 
-export default function AdminDashboard({ user, accessToken }: AdminDashboardProps) {
-  
+export default function AdminDashboard({
+  user,
+  accessToken,
+}: AdminDashboardProps) {
   const { apiService, isLoading: apiLoading } = useApiService();
   const [activeTab, setActiveTab] = useState("lifehacks");
   const [formData, setFormData] = useState({
