@@ -12,12 +12,12 @@ export default async function Home() {
     redirect("/auth/login");
   }
 
-  const { accessToken } = session.tokenSet;
+  const { idToken } = session.tokenSet;
   // Logout the user if the access token is not found
-  if (!accessToken) {
+  if (!idToken) {
     redirect("/auth/logout");
   }
 
   // If session exists, show admin dashboard
-  return <AdminDashboard user={session.user} accessToken={accessToken} />;
+  return <AdminDashboard user={session.user} accessToken={idToken} />;
 }
