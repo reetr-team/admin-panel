@@ -4,6 +4,21 @@ import { useState, useEffect } from "react";
 import { useApiService } from "@/lib/hooks/useApiService";
 import { apiPost } from "@/lib/api-utils";
 
+// Add PATCH function
+const apiPatch = async (endpoint: string, accessToken: string, body: any) => {
+  const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API;
+  const response = await fetch(`${BACKEND_API}${endpoint}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  
+  return response.json();
+};
+
 export enum LifeHackCategory {
   FAITH = "faith",
   FITNESS = "fitness",
@@ -15,13 +30,13 @@ export enum LifeHackCategory {
 }
 
 export enum Day {
-  MONDAY = "Monday",
-  TUESDAY = "Tuesday",
-  WEDNESDAY = "Wednesday",
-  THURSDAY = "Thursday",
-  FRIDAY = "Friday",
-  SATURDAY = "Saturday",
-  SUNDAY = "Sunday",
+  MONDAY = "monday",
+  TUESDAY = "tuesday",
+  WEDNESDAY = "wednesday",
+  THURSDAY = "thursday",
+  FRIDAY = "friday",
+  SATURDAY = "saturday",
+  SUNDAY = "sunday",
 }
 
 interface LifeHackFormProps {
@@ -30,6 +45,7 @@ interface LifeHackFormProps {
   initialData?: any;
   onSuccess?: () => void;
   onCancel?: () => void;
+  onToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
 export default function LifeHackForm({ 
@@ -37,7 +53,8 @@ export default function LifeHackForm({
   isEditMode = false, 
   initialData = null,
   onSuccess,
-  onCancel 
+  onCancel,
+  onToast
 }: LifeHackFormProps) {
   const { apiService } = useApiService();
   const [formData, setFormData] = useState({
@@ -104,7 +121,7 @@ export default function LifeHackForm({
       !formData.defaultDay ||
       !formData.defaultTime
     ) {
-      alert("Please fill in all required fields");
+      onToast?.("Please fill in all required fields", "error");
       return;
     }
 
@@ -113,7 +130,7 @@ export default function LifeHackForm({
       (prompt) => prompt.trim() === ""
     );
     if (hasEmptyPrompts) {
-      alert("Please fill in all guided prompts or remove empty ones");
+      onToast?.("Please fill in all guided prompts or remove empty ones", "error");
       return;
     }
 
@@ -132,13 +149,19 @@ export default function LifeHackForm({
           guidedPrompts: formData.guidedPrompts,
         };
 
-        const response = await apiPost(
-          "/v1/life-hacks/",
-          backendAccessToken,
-          payload
-        );
+        const response = isEditMode 
+          ? await apiPatch(
+              `/v1/life-hacks/${initialData.id}`,
+              backendAccessToken,
+              payload
+            )
+          : await apiPost(
+              "/v1/life-hacks/",
+              backendAccessToken,
+              payload
+            );
         console.log(`Life hack ${isEditMode ? 'updated' : 'created'}:`, response);
-        alert(`Life hack ${isEditMode ? 'updated' : 'created'} successfully!`);
+        onToast?.(`Life hack ${isEditMode ? 'updated' : 'created'} successfully!`, "success");
 
         if (onSuccess) {
           onSuccess();
@@ -148,7 +171,7 @@ export default function LifeHackForm({
         console.log(`${isEditMode ? 'Updating' : 'Creating'} life hack via API service...`);
         const response = await apiService.post("/lifehacks", formData);
         console.log("Life hack processed:", response);
-        alert(`Life hack ${isEditMode ? 'updated' : 'created'} successfully!`);
+        onToast?.(`Life hack ${isEditMode ? 'updated' : 'created'} successfully!`, "success");
 
         if (onSuccess) {
           onSuccess();
@@ -156,7 +179,7 @@ export default function LifeHackForm({
       } else {
         // Fallback for when API service is not ready
         console.log("API service not ready, showing success message");
-        alert(`Life hack ${isEditMode ? 'updated' : 'created'} successfully!`);
+        onToast?.(`Life hack ${isEditMode ? 'updated' : 'created'} successfully!`, "success");
       }
 
       // Reset form only in create mode
@@ -175,7 +198,7 @@ export default function LifeHackForm({
       }
     } catch (error) {
       console.error("Error:", error);
-      alert(`Error ${isEditMode ? 'updating' : 'creating'} life hack`);
+      onToast?.(`Error ${isEditMode ? 'updating' : 'creating'} life hack`, "error");
     }
   };
 
@@ -266,7 +289,7 @@ export default function LifeHackForm({
             >
               {Object.values(Day).map((day) => (
                 <option key={day} value={day}>
-                  {day}
+                  {day.charAt(0).toUpperCase() + day.slice(1)}
                 </option>
               ))}
             </select>
