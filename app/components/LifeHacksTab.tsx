@@ -164,29 +164,6 @@ export default function LifeHacksTab({
     }
   };
 
-  const handleDelete = async (lifeHack: any) => {
-    if (!backendAccessToken) return;
-
-    try {
-      await apiDelete(`/v1/life-hacks/${lifeHack.id}`, backendAccessToken);
-
-      console.log("Life hack deleted:", lifeHack.id);
-      setToast({
-        message: "Life hack deleted successfully!",
-        type: "success",
-      });
-
-      // Refresh both lists
-      fetchAllLifeHacks();
-    } catch (error) {
-      console.error("Error deleting life hack:", error);
-      setToast({
-        message: "Error deleting life hack",
-        type: "error",
-      });
-    }
-  };
-
   return (
     <>
       {toast && (
@@ -477,12 +454,6 @@ export default function LifeHacksTab({
                                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                                       >
                                         Unarchive
-                                      </button>
-                                      <button
-                                        onClick={() => handleDelete(lifeHack)}
-                                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                      >
-                                        Delete
                                       </button>
                                     </div>
                                   </div>
