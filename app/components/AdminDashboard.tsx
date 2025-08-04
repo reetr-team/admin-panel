@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useApiService } from "@/lib/hooks/useApiService";
 import { apiPost } from "@/lib/api-utils";
 import LifeHacksTab from "./LifeHacksTab";
+import AssessmentsTab from "./AssessmentsTab";
 
 interface AdminDashboardProps {
   user: {
@@ -20,7 +21,7 @@ export default function AdminDashboard({
   accessToken,
 }: AdminDashboardProps) {
   const { apiService, isLoading: apiLoading } = useApiService();
-  const [activeTab, setActiveTab] = useState("lifehacks");
+  const [activeTab, setActiveTab] = useState("assessments");
   const [backendAccessToken, setBackendAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,6 +32,12 @@ export default function AdminDashboard({
     // Make API call on component mount
     const makeApiCall = async () => {
       try {
+        // Check if backend API is configured
+        if (!process.env.NEXT_PUBLIC_BACKEND_API) {
+          console.warn("NEXT_PUBLIC_BACKEND_API not configured, skipping backend authentication");
+          return;
+        }
+
         const body = {
           auth0_user_id: user.sub,
           email: user.email,
@@ -47,6 +54,7 @@ export default function AdminDashboard({
         }
       } catch (error) {
         console.error("API call failed:", error);
+        console.warn("Backend API not available, continuing with mock functionality");
       }
     };
 
@@ -83,16 +91,6 @@ export default function AdminDashboard({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             <button
-              onClick={() => setActiveTab("lifehacks")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "lifehacks"
-                  ? "border-green-600 text-green-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Life Hacks
-            </button>
-            <button
               onClick={() => setActiveTab("assessments")}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === "assessments"
@@ -102,28 +100,28 @@ export default function AdminDashboard({
             >
               Assessments
             </button>
+            <button
+              onClick={() => setActiveTab("lifehacks")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "lifehacks"
+                  ? "border-green-600 text-green-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Life Hacks
+            </button>
           </nav>
         </div>
       </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === "lifehacks" && (
-          <LifeHacksTab backendAccessToken={backendAccessToken} />
+        {activeTab === "assessments" && (
+          <AssessmentsTab backendAccessToken={backendAccessToken} />
         )}
 
-        {activeTab === "assessments" && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Assessments
-            </h2>
-            <p className="text-gray-600">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
-            </p>
-          </div>
+        {activeTab === "lifehacks" && (
+          <LifeHacksTab backendAccessToken={backendAccessToken} />
         )}
       </main>
     </div>
